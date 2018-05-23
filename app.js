@@ -142,6 +142,11 @@ function reset() {
 
     captain1 = '';
     captain2 = '';
+
+    timers.forEach(timer => {
+        clearTimeout(timer);
+    });
+    timers = [];
 }
 
 function handleCommands(msg) {
@@ -161,6 +166,13 @@ function handleCommands(msg) {
             break;
         case 'ships':
             msg.reply('__All Ships:__\n' + validShips);
+            return 'exit'
+            break;
+        case 'reset':
+        case 'stop':
+            msg.reply('Resetting draft.');
+            currentState = state.IDLE;
+            reset();
             return 'exit'
             break;
     }
