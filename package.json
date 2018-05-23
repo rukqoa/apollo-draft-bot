@@ -1,0 +1,8 @@
+{
+    "name": "apollo-draft-bot",
+    "version": "0.0.1",
+    "description": "Bot for drafting for Apollo",
+    "dependencies": {
+        "discord.js": "latest"
+    }
+}
