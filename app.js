@@ -28,10 +28,13 @@ let validShips = ['aegis', 'basilisk', 'black widow', 'brawler', 'centurion',
     'watchman'
 ];
 let privilegedUsers = ['175802984192671744'];
+let draftChannel = '448543636523843596';
 
 client.on('message', msg => {
     if (msg.author.id === client.user.id) {
         // bot sent this message, ignore
+        return;
+    } else if (msg.channel.type !== 'dm') {
         return;
     }
 
@@ -190,8 +193,12 @@ function handleCommands(msg) {
             return 'exit'
             break;
         case 'test':
-            if (privilegedUsers.includes(msg.author.id))
-                console.log('Hello, Admin');
+            if (privilegedUsers.includes(msg.author.id)) {
+                msg.reply('Hello, Admin');
+                client.channels.forEach(ch => {
+                    console.log(ch.name + ch.id);
+                });
+            }
             return 'exit'
             break;
 
@@ -294,6 +301,7 @@ function triggerNextPhase(phase, nextPhase) {
     } else {
         currentState = state.IDLE;
         broadcast(`[INFO] All bans and picks complete!\n${printDraft()}`);
+        client.channels.get(draftChannel).send(`__Draft between ${captain1.username} & ${captain2.username}:__\n${printDraft()}`);
     }
 }
 
