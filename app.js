@@ -27,6 +27,7 @@ let validShips = ['aegis', 'basilisk', 'black widow', 'brawler', 'centurion',
     'ranger', 'raven', 'reaper', 'sentinel', 'superlifter', 'venturer',
     'watchman'
 ];
+let privilegedUsers = ['175802984192671744'];
 
 client.on('message', msg => {
     if (msg.author.id === client.user.id) {
@@ -153,14 +154,27 @@ function handleCommands(msg) {
     let message = msg.content.toLowerCase();
     switch (message) {
         case 'help':
-            msg.reply('Instructions WIP');
+            let helpText = '**How to use:**\n';
+            helpText += 'Type "start" to start, then have the 2 captains message anything to the bot to register themselves, and follow the messages.\n\n';
+
+            helpText += '**Bot Commands:**\n';
+            helpText += 'start: Starts the drafting process\n';
+            helpText += 'stop: Stops and reset the drafting process\n';
+            helpText += 'reset: Does the same thing as stop\n';
+            helpText += 'status: Shows current drafting status\n';
+            helpText += 'ships: Shows all valid ship selections\n';
+            helpText += 'help: Show help info page\n\n';
+
+            helpText += '**Bot Status:**\n'
+            helpText += `Uptime: ${msToTime(client.uptime)}\n\n`;
+
+            helpText += '*Created by rukqoa*';
+
+            msg.reply(helpText);
+
             return 'exit';
             break;
         case 'status':
-            msg.reply('Bot status WIP');
-            return 'exit';
-            break;
-        case 'current':
             msg.reply('__Current Draft Status:__\n' + printDraft());
             return 'exit'
             break;
@@ -175,6 +189,12 @@ function handleCommands(msg) {
             reset();
             return 'exit'
             break;
+        case 'test':
+            if (privilegedUsers.includes(msg.author.id))
+                console.log('Hello, Admin');
+            return 'exit'
+            break;
+
     }
 }
 
@@ -379,6 +399,11 @@ function timeWarnings() {
     }, 120 * 1000);
 
     timers = [warning90, warning60, warning30, warning10, done];
+}
+
+function msToTime(s) {
+    let pad = (n, z = 2) => ('00' + n).slice(-z);
+    return pad(s / 3.6e6 | 0) + ':' + pad((s % 3.6e6) / 6e4 | 0) + ':' + pad((s % 6e4) / 1000 | 0) + '.' + pad(s % 1000, 3);
 }
 
 client.login('NDQ4NTQzOTg5MzY1MzQyMjA4.DeXqrw.mgthr_iDiww5VwlXgAHl59g0vOc');
