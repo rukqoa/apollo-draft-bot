@@ -46,33 +46,37 @@ client.on('message', msg => {
 
     switch (currentState) {
         case state.IDLE:
-            if (msg.content.toLowerCase().startsWith('start')) {
-                if (msg.content.trim().split(' ').length > 1) {
-                    let cap1user = msg.content.trim().split(' ')[1];
-                    let cap2user = msg.content.trim().split(' ')[2];
+            executeWithRole(msg.author, 'drafters', () => {
+                if (msg.content.toLowerCase().startsWith('start')) {
+                    if (msg.content.trim().split(' ').length > 1) {
+                        let cap1user = msg.content.trim().split(' ')[1];
+                        let cap2user = msg.content.trim().split(' ')[2];
 
-                    if (!cap1user || !cap2user) {
-                        msg.reply('[ERROR] You must enter 2 captains!');
-                    } else if (cap1user.toLowerCase() === cap2user.toLowerCase()) {
-                        msg.reply('[ERROR] Your 2 captains must be different users!');
-                    } else {
-                        let getCaptains = findCaptains(cap1user, cap2user);
-                        if (getCaptains === 'success') {
-                            broadcast('[INFO] You have been selected as a captain! Ban 1?');
-                            currentState = state.BAN1;
-                            timeWarnings();
+                        if (!cap1user || !cap2user) {
+                            msg.reply('[ERROR] You must enter 2 captains!');
+                        } else if (cap1user.toLowerCase() === cap2user.toLowerCase()) {
+                            msg.reply('[ERROR] Your 2 captains must be different users!');
                         } else {
-                            msg.reply(`[ERROR] ${getCaptains}`);
+                            let getCaptains = findCaptains(cap1user, cap2user);
+                            if (getCaptains === 'success') {
+                                broadcast('[INFO] You have been selected as a captain! Ban 1?');
+                                currentState = state.BAN1;
+                                timeWarnings();
+                            } else {
+                                msg.reply(`[ERROR] ${getCaptains}`);
+                            }
                         }
+                    } else {
+                        msg.reply('[INFO] Starting draft! Next 2 users to talk to me are captains!');
+                        currentState = state.WAITING;
+                        reset();
                     }
                 } else {
-                    msg.reply('[INFO] Starting draft! Next 2 users to talk to me are captains!');
-                    currentState = state.WAITING;
-                    reset();
+                    msg.reply('[ERROR] Drafting has not started yet!');
                 }
-            } else {
-                msg.reply('[ERROR] Drafting has not started yet!');
-            }
+            }, () => {
+                msg.reply('[ERROR] You are not authorized to execute this command!');
+            });
             break;
         case state.WAITING:
             if (!captain1) {
@@ -216,21 +220,39 @@ function handleCommands(msg) {
             return 'exit'
             break;
         case 'test':
-            if (privilegedUsers.includes(msg.author.id)) {
-                msg.reply('Hello, Admin');
-                client.channels.forEach(ch => {
-                    console.log(ch.name + ch.id);
-                });
-            }
+            executeWithRole(msg.author, 'drafters', () => {
+                msg.reply('hello drafter');
+            }, () => {
+                msg.reply('[ERROR] You are not authorized to execute this command!')
+            });
             return 'exit'
             break;
-
     }
 }
 
 function broadcast(message) {
     captain1.send(message);
     captain2.send(message);
+}
+
+function executeWithRole(user, roleName, callback, err) {
+    client.guilds.forEach(guild => {
+        if (guild.id === '284622744090443786') {
+            guild.fetchMember(user).then(member => {
+                let hasRole = false;
+                member.roles.forEach(role => {
+                    if (role.name === roleName) {
+                        console.log(`${user.username} has successfully authenticated as a member of ${roleName}`);
+                        hasRole = true;
+                        callback();
+                    }
+                });
+                if (!hasRole) {
+                    err();
+                }
+            });
+        }
+    });
 }
 
 function findCaptains(cap1user, cap2user) {
