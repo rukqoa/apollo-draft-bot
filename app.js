@@ -46,10 +46,30 @@ client.on('message', msg => {
 
     switch (currentState) {
         case state.IDLE:
-            if (msg.content.toLowerCase() === 'start') {
-                msg.reply('[INFO] Starting draft! Next 2 users to talk to me are captains!');
-                reset();
-                currentState = state.WAITING;
+            if (msg.content.toLowerCase().startsWith('start')) {
+                if (msg.content.trim().split(' ').length > 1) {
+                    let cap1user = msg.content.trim().split(' ')[1];
+                    let cap2user = msg.content.trim().split(' ')[2];
+
+                    if (!cap1user || !cap2user) {
+                        msg.reply('[ERROR] You must enter 2 captains!');
+                    } else if (cap1user.toLowerCase() === cap2user.toLowerCase()) {
+                        msg.reply('[ERROR] Your 2 captains must be different users!');
+                    } else {
+                        let getCaptains = findCaptains(cap1user, cap2user);
+                        if (getCaptains === 'success') {
+                            broadcast('[INFO] You have been selected as a captain! Ban 1?');
+                            currentState = state.BAN1;
+                            timeWarnings();
+                        } else {
+                            msg.reply(`[ERROR] ${getCaptains}`);
+                        }
+                    }
+                } else {
+                    msg.reply('[INFO] Starting draft! Next 2 users to talk to me are captains!');
+                    currentState = state.WAITING;
+                    reset();
+                }
             } else {
                 msg.reply('[ERROR] Drafting has not started yet!');
             }
@@ -210,6 +230,26 @@ function handleCommands(msg) {
 function broadcast(message) {
     captain1.send(message);
     captain2.send(message);
+}
+
+function findCaptains(cap1user, cap2user) {
+    reset();
+
+    client.users.forEach(user => {
+        if (user.username.toLowerCase() === cap1user.toLowerCase()) {
+            captain1 = user;
+        } else if (user.username.toLowerCase() === cap2user.toLowerCase()) {
+            captain2 = user;
+        }
+    });
+
+    if (captain1 && captain2) {
+        return 'success';
+    } else if (!captain1) {
+        return 'Captain 1 was not found!';
+    } else {
+        return 'Captain 2 was not found!';
+    }
 }
 
 function validateSelection(msg) {
