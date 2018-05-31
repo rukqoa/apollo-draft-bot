@@ -29,8 +29,8 @@ let validShips = ['aegis', 'basilisk', 'black widow', 'brawler', 'centurion',
     'ranger', 'raven', 'reaper', 'sentinel', 'superlifter', 'venturer',
     'watchman'
 ];
-let privilegedUsers = ['175802984192671744'];
 let draftChannel = '448543636523843596';
+let apolloServerId = '284622744090443786';
 
 client.on('message', msg => {
     if (msg.author.id === client.user.id) {
@@ -205,7 +205,11 @@ function handleCommands(msg) {
             return 'exit';
             break;
         case 'status':
-            msg.reply('__Current Draft Status:__\n' + printDraft());
+            if (printDraft()) {
+                msg.reply('__Current Draft Status:__\n' + printDraft());
+            } else {
+                msg.reply('Currently idle.');
+            }
             return 'exit'
             break;
         case 'ships':
@@ -237,7 +241,7 @@ function broadcast(message) {
 
 function executeWithRole(user, roleName, callback, err) {
     client.guilds.forEach(guild => {
-        if (guild.id === '284622744090443786') {
+        if (guild.id === apolloServerId) {
             guild.fetchMember(user).then(member => {
                 let hasRole = false;
                 member.roles.forEach(role => {
@@ -368,6 +372,7 @@ function triggerNextPhase(phase, nextPhase) {
         currentState = state.IDLE;
         broadcast(`[INFO] All bans and picks complete!\n${printDraft()}`);
         client.channels.get(draftChannel).send(`__Draft between ${captain1.username} & ${captain2.username}:__\n${printDraft()}`);
+        reset();
     }
 }
 
@@ -376,7 +381,9 @@ function printDraft() {
     let phasesToPrint = [];
     switch (currentState) {
         case state.IDLE:
-            phasesToPrint = [draft.ban1, draft.pick1, draft.ban23, draft.pick2, draft.ban45, draft.pick3];
+            if (captain1 && captain2) {
+                phasesToPrint = [draft.ban1, draft.pick1, draft.ban23, draft.pick2, draft.ban45, draft.pick3];
+            }
             break;
         case state.WAITING:
             phasesToPrint = [];
