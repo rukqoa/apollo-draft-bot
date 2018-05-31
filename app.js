@@ -241,8 +241,6 @@ function validateSelection(msg) {
                 if (ship === draft.pick1.team2 || ship === draft.pick2.team2) {
                     errors += `[ERROR] Invalid pick: your team has already picked ${ship}!\n`;
                 }
-            } else {
-                errors += '[ERROR] You are not a registered captain.';
             }
         }
     });
@@ -269,6 +267,11 @@ function isTwoBans() {
 }
 
 function handlePickOrBan(msg, phase, nextPhase) {
+    if (msg.author.id !== captain1.id && msg.author.id !== captain2.id) {
+        msg.reply('[ERROR] You are not a registered captain.')
+        return;
+    }
+
     let validation = validateSelection(msg);
     if (validation !== 'success') {
         msg.reply(validation);
@@ -279,8 +282,6 @@ function handlePickOrBan(msg, phase, nextPhase) {
         phase.team1 = msg.content.toLowerCase().trim();
     } else if (msg.author.id === captain2.id) {
         phase.team2 = msg.content.toLowerCase().trim();
-    } else {
-        msg.reply('[ERROR] You are not a registered captain.')
     }
 
     if (phase.team1 && phase.team2) {
