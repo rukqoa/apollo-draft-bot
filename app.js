@@ -184,6 +184,7 @@ function handleCommands(msg) {
 
             helpText += '**Bot Commands:**\n';
             helpText += 'start: Starts the drafting process\n';
+            helpText += 'start <captain 1 username> <captain 2 username>: Starts the drafting process with captains pre-specified\n';
             helpText += 'stop: Stops and reset the drafting process\n';
             helpText += 'reset: Does the same thing as stop\n';
             helpText += 'status: Shows current drafting status\n';
