@@ -20,6 +20,7 @@ let state = {
 let currentState = state.IDLE;
 let captain1, captain2;
 let draft;
+let subscribers;
 let timers = [];
 let validShips = ['aegis', 'basilisk', 'black widow', 'brawler', 'centurion',
     'colossus', 'destroyer', 'displacer', 'disruptor', 'endeavor', 'enforcer',
@@ -113,29 +114,6 @@ client.on('message', msg => {
     }
 });
 
-function handleSelection() {
-    switch (currenState) {
-        case state.BAN1:
-            handlePickOrBan(msg, draft.ban1, state.PICK1);
-            break;
-        case state.PICK1:
-            handlePickOrBan(msg, draft.pick1, state.BAN23);
-            break;
-        case state.BAN23:
-            handlePickOrBan(msg, draft.ban23, state.PICK2);
-            break;
-        case state.PICK2:
-            handlePickOrBan(msg, draft.pick2, state.BAN45);
-            break;
-        case state.BAN45:
-            handlePickOrBan(msg, draft.ban45, state.PICK3);
-            break;
-        case state.PICK3:
-            handlePickOrBan(msg, draft.pick3);
-            break;
-    }
-}
-
 function reset() {
     draft = {
         ban1: {
@@ -177,6 +155,8 @@ function reset() {
         clearTimeout(timer);
     });
     timers = [];
+
+    subscribers = [];
 }
 
 function handleCommands(msg) {
@@ -210,11 +190,11 @@ function handleCommands(msg) {
             } else {
                 msg.reply('Currently idle.');
             }
-            return 'exit'
+            return 'exit';
             break;
         case 'ships':
             msg.reply('__All Ships:__\n' + validShips);
-            return 'exit'
+            return 'exit';
             break;
         case 'reset':
         case 'stop':
@@ -223,13 +203,22 @@ function handleCommands(msg) {
             reset();
             return 'exit'
             break;
+        case 'subscribe':
+            if (currentState !== state.IDLE) {
+                msg.reply('Subscribed to current draft.');
+                subscribers.push(msg.author);
+            } else {
+                msg.reply('Cannot subscribe. No draft ongoing.');
+            }
+            return 'exit';
+            break;
         case 'test':
             executeWithRole(msg.author, 'drafters', () => {
                 msg.reply('hello drafter');
             }, () => {
                 msg.reply('[ERROR] You are not authorized to execute this command!')
             });
-            return 'exit'
+            return 'exit';
             break;
     }
 }
@@ -237,6 +226,12 @@ function handleCommands(msg) {
 function broadcast(message) {
     captain1.send(message);
     captain2.send(message);
+}
+
+function pushToSubs(message) {
+    subscribers.forEach(sub => {
+        sub.send(message);
+    });
 }
 
 function executeWithRole(user, roleName, callback, err) {
@@ -365,13 +360,18 @@ function triggerNextPhase(phase, nextPhase) {
     timers = [];
 
     if (nextPhase) {
-        broadcast(`**${phase.text}:** \n${captain1.username}: ${phase.team1}\n${captain2.username}: ${phase.team2}\n${nextPhase}?`);
+        let phasePrinter = `**${phase.text}:** \n${captain1.username}: ${phase.team1}\n${captain2.username}: ${phase.team2}`;
+        broadcast(phasePrinter + `\n${nextPhase}?`);
+        pushToSubs(phasePrinter);
         currentState = nextPhase;
         timeWarnings();
     } else {
         currentState = state.IDLE;
+
+        let draftPrinter = `__Draft between ${captain1.username} & ${captain2.username}:__\n${printDraft()}`;
         broadcast(`[INFO] All bans and picks complete!\n${printDraft()}`);
-        client.channels.get(draftChannel).send(`__Draft between ${captain1.username} & ${captain2.username}:__\n${printDraft()}`);
+        client.channels.get(draftChannel).send(draftPrinter);
+        pushToSubs(draftPrinter);
         reset();
     }
 }
