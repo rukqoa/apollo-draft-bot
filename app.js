@@ -172,6 +172,7 @@ function handleCommands(msg) {
             helpText += 'stop: Stops and reset the drafting process\n';
             helpText += 'reset: Does the same thing as stop\n';
             helpText += 'status: Shows current drafting status\n';
+            helpText += 'subscribe: Messages you after each phase of current draft\n';
             helpText += 'ships: Shows all valid ship selections\n';
             helpText += 'help: Show help info page\n\n';
 
