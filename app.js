@@ -194,7 +194,7 @@ function handleCommands(msg) {
             return 'exit';
             break;
         case 'ships':
-            msg.reply('__All Ships:__\n' + validShips);
+            msg.reply(printValidShips());
             return 'exit';
             break;
         case 'reset':
@@ -361,7 +361,7 @@ function triggerNextPhase(phase, nextPhase) {
     timers = [];
 
     if (nextPhase) {
-        let phasePrinter = `**${phase.text}:** \n${captain1.username}: ${phase.team1}\n${captain2.username}: ${phase.team2}`;
+        let phasePrinter = `**${phase.text}:** \n${captain1.username}: ${capitalize(phase.team1)}\n${captain2.username}: ${capitalize(phase.team2)}`;
         broadcast(phasePrinter + `\n${nextPhase}?`);
         pushToSubs(phasePrinter);
         currentState = nextPhase;
@@ -411,10 +411,24 @@ function printDraft() {
 
     phasesToPrint.forEach(v => {
         currentDraft += `**${v.text}**\n`;
-        currentDraft += `${captain1.username}: ${v.team1}\n`;
-        currentDraft += `${captain2.username}: ${v.team2}\n`;
+        currentDraft += `${captain1.username}: ${capitalize(v.team1)}\n`;
+        currentDraft += `${captain2.username}: ${capitalize(v.team2)}\n`;
     });
     return currentDraft;
+}
+
+function printValidShips() {
+    let validShipPrinter = '__All Valid Ships:__\n';
+    validShips.forEach(ship => {
+        validShipPrinter += `${capitalize(ship)}\n`;
+    });
+    return validShipPrinter;
+}
+
+function capitalize(str) {
+    return str.replace(/\w\S*/g, function(txt) {
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    });
 }
 
 function sendIfUndecided(message, phase) {
