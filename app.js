@@ -22,6 +22,7 @@ let captain1, captain2;
 let draft;
 let subscribers;
 let timers = [];
+let nextPhaseTimer;
 let validShips = ['aegis', 'basilisk', 'black widow', 'brawler', 'centurion',
     'colossus', 'destroyer', 'displacer', 'disruptor', 'endeavor', 'enforcer',
     'equalizer', 'executioner', 'furion', 'ghost', 'gladiator', 'guardian',
@@ -155,6 +156,7 @@ function reset() {
         clearTimeout(timer);
     });
     timers = [];
+    nextPhaseTimer = '';
 
     subscribers = [];
 }
@@ -186,8 +188,12 @@ function handleCommands(msg) {
             return 'exit';
             break;
         case 'status':
-            if (printDraft()) {
-                msg.reply('__Current Draft Status:__\n' + printDraft());
+            if (currentState !== state.IDLE && currentState !== state.WAITING) {
+                let statusPrinter = '__Status:__\n';
+                statusPrinter += `*Current Stage: ${currentState.replace(/\(.*\)/g, '').trim()}*\n`;
+                statusPrinter += `*Time Remaining: ${Math.floor(nextPhaseTimer - currentTimeInSeconds())} seconds*\n\n`;
+                statusPrinter += printDraft();
+                msg.reply(statusPrinter);
             } else {
                 msg.reply('Currently idle.');
             }
@@ -495,6 +501,12 @@ function timeWarnings() {
     }, 120 * 1000);
 
     timers = [warning90, warning60, warning30, warning10, done];
+
+    nextPhaseTimer = currentTimeInSeconds() + 120;
+}
+
+function currentTimeInSeconds() {
+    return new Date().getTime() / 1000;
 }
 
 function msToTime(s) {
