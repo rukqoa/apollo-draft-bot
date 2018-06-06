@@ -33,6 +33,7 @@ let validShips = ['aegis', 'basilisk', 'black widow', 'brawler', 'centurion',
 ];
 let draftChannel = '448543636523843596';
 let apolloServerId = '284622744090443786';
+let privateDraft = false;
 
 client.on('message', msg => {
     if (msg.author.id === client.user.id) {
@@ -72,6 +73,12 @@ client.on('message', msg => {
                         msg.reply('[INFO] Starting draft! Next 2 users to talk to me are captains!');
                         currentState = state.WAITING;
                         reset();
+                    }
+
+                    if (msg.content.toLowerCase().startsWith('start!')) {
+                        privateDraft = true;
+                    } else {
+                        privateDraft = false;
                     }
                 } else {
                     msg.reply('[ERROR] Drafting has not started yet!');
@@ -159,6 +166,8 @@ function reset() {
     nextPhaseTimer = '';
 
     subscribers = [];
+
+    private = false;
 }
 
 function handleCommands(msg) {
@@ -377,7 +386,11 @@ function triggerNextPhase(phase, nextPhase) {
 
         let draftPrinter = `__Draft between ${captain1.username} & ${captain2.username}:__\n${printDraft()}`;
         broadcast(`[INFO] All bans and picks complete!\n${printDraft()}`);
-        client.channels.get(draftChannel).send(draftPrinter);
+
+        if (!privateDraft) {
+            client.channels.get(draftChannel).send(draftPrinter);
+        }
+
         pushToSubs(draftPrinter);
         reset();
     }
