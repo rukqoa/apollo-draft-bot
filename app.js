@@ -29,7 +29,7 @@ let validShips = ['aegis', 'basilisk', 'black widow', 'brawler', 'centurion',
     'hunter', 'infiltrator', 'interceptor', 'leviathan', 'overseer', 'paladin',
     'paragon', 'persecutor', 'pioneer', 'protector', 'punisher', 'raider',
     'ranger', 'raven', 'reaper', 'sentinel', 'superlifter', 'venturer',
-    'watchman'
+    'watchman', 'skip1', 'skip2', 'skip3'
 ];
 let draftChannel = '448543636523843596';
 let apolloServerId = '284622744090443786';
@@ -193,7 +193,6 @@ function handleCommands(msg) {
             helpText += '*Created by rukqoa*';
 
             msg.reply(helpText);
-
             return 'exit';
             break;
         case 'status':
@@ -214,15 +213,19 @@ function handleCommands(msg) {
             break;
         case 'reset':
         case 'stop':
-            msg.reply('Resetting draft.');
-            currentState = state.IDLE;
-            reset();
-            return 'exit'
+            executeWithRole(msg.author, 'drafters', () => {
+                msg.reply('Resetting draft.');
+                currentState = state.IDLE;
+                reset();
+            }, () => {
+                msg.reply('[ERROR] You are not authorized to execute this command!');
+            });
+            return 'exit';
             break;
         case 'subscribe':
             if (currentState !== state.IDLE) {
                 msg.reply('Subscribed to current draft.');
-                subscribers.push(msg.author);
+                subscribers.indexOf(msg.author) === -1 ? subscribers.push(msg.author) : msg.reply('You are already subscribed.');
             } else {
                 msg.reply('Cannot subscribe. No draft ongoing.');
             }
