@@ -490,18 +490,15 @@ function timeWarnings() {
             break;
     }
 
-    let warning90 = setTimeout(() => {
-        sendIfUndecided('[WARNING] 90 seconds remaining in this selection period.', phase)
-    }, 30 * 1000);
-    let warning60 = setTimeout(() => {
-        sendIfUndecided('[WARNING] 60 seconds remaining in this selection period.', phase)
-    }, 60 * 1000);
+    let warning45 = setTimeout(() => {
+        sendIfUndecided('[WARNING] 45 seconds remaining in this selection period.', phase)
+    }, 15 * 1000);
     let warning30 = setTimeout(() => {
         sendIfUndecided('[WARNING] 30 seconds remaining in this selection period.', phase)
-    }, 90 * 1000);
-    let warning10 = setTimeout(() => {
-        sendIfUndecided('[WARNING] 10 seconds remaining in this selection period.', phase)
-    }, 110 * 1000);
+    }, 30 * 1000);
+    let warning15 = setTimeout(() => {
+        sendIfUndecided('[WARNING] 15 seconds remaining in this selection period.', phase)
+    }, 45 * 1000);
     let done = setTimeout(() => {
         sendIfUndecided('[INFO] Time has run out. Moving onto the next phase.', phase);
 
@@ -514,11 +511,11 @@ function timeWarnings() {
         }
 
         triggerNextPhase(phase, nextPhase);
-    }, 120 * 1000);
+    }, 60 * 1000);
 
-    timers = [warning90, warning60, warning30, warning10, done];
+    timers = [warning45, warning30, warning15, done];
 
-    nextPhaseTimer = currentTimeInSeconds() + 120;
+    nextPhaseTimer = currentTimeInSeconds() + 60;
 }
 
 function currentTimeInSeconds() {
